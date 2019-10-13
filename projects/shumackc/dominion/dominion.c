@@ -150,7 +150,7 @@ int ambassadorCardEffect(int choice1, int choice2, struct gameState *state, int 
 		{
 			//BUG ADDED: Changed j to decrement by 1 each loop rather than increment, so the function
 			//always ends (returns) in the next if statement.
-			j++;
+			j--;
 		}
 	}
 	if (j < choice2)
