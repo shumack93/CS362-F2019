@@ -150,7 +150,7 @@ int ambassadorCardEffect(int choice1, int choice2, struct gameState *state, int 
 		{
 			//BUG ADDED: Changed j to decrement by 1 each loop rather than increment, so the function
 			//always ends (returns) in the next if statement.
-			j--;
+			j++;
 		}
 	}
 	if (j < choice2)
@@ -193,7 +193,7 @@ int ambassadorCardEffect(int choice1, int choice2, struct gameState *state, int 
 	return 0;
 }
 
-int tributeCardEffect(struct gameState *state)
+int tributeCardEffect(struct gameState *state, int handPos)
 {
 	int i;
 	int currentPlayer = whoseTurn(state);
@@ -213,7 +213,7 @@ int tributeCardEffect(struct gameState *state)
 		}
 		else if (state->discardCount[nextPlayer] > 0) {
 			tributeRevealedCards[0] = state->discard[nextPlayer][state->discardCount[nextPlayer] - 1];
-			state->discardCount[nextPlayer]--;
+			state->discardCount[nextPlayer]++;
 		}
 		else {
 			//No Card to Reveal
@@ -235,10 +235,10 @@ int tributeCardEffect(struct gameState *state)
 			shuffle(nextPlayer, state);//Shuffle the deck
 		}
 		tributeRevealedCards[0] = state->deck[nextPlayer][state->deckCount[nextPlayer] - 1];
-		state->deck[nextPlayer][state->deckCount[nextPlayer]--] = -1;
+		state->deck[nextPlayer][state->deckCount[nextPlayer] - 1] = -1;
 		state->deckCount[nextPlayer]--;
 		tributeRevealedCards[1] = state->deck[nextPlayer][state->deckCount[nextPlayer] - 1];
-		state->deck[nextPlayer][state->deckCount[nextPlayer]--] = -1;
+		state->deck[nextPlayer][state->deckCount[nextPlayer] - 1] = -1;
 		state->deckCount[nextPlayer]--;
 	}
 
@@ -248,7 +248,7 @@ int tributeCardEffect(struct gameState *state)
 		tributeRevealedCards[1] = -1;
 	}
 
-	for (i = 0; i <= 2; i++) {
+	for (i = 0; i < 2; i++) {
 		if (tributeRevealedCards[i] == copper || tributeRevealedCards[i] == silver || tributeRevealedCards[i] == gold) { //Treasure cards
 			//BUG ADDED: If a treasure card is revealed, the player gains 0 coins instead of 2.
 			state->coins += 0;
@@ -262,6 +262,8 @@ int tributeCardEffect(struct gameState *state)
 			state->numActions = state->numActions + 2;
 		}
 	}
+
+	discardCard(handPos, currentPlayer, state, 0);
 
 	return 0;
 }
@@ -280,7 +282,7 @@ int mineCardEffect(int choice1, int choice2, struct gameState *state, int handPo
 	}
 
 	//BUG ADDED: Commented out this if statement so that it is no longer checked as part of the function.
-	//if (choice2 > treasure_map || choice2 < curse)
+	//if (choice2 > gold || choice2 < copper)
 	//{
 	//	return -1;
 	//}
@@ -296,14 +298,14 @@ int mineCardEffect(int choice1, int choice2, struct gameState *state, int handPo
 	//BUG ADDED: Commented out the call to discardCard so that the player no longer has to discard 
 	//a treasure card in order to gain one.
 
-	//discardCard(handPos, currentPlayer, state, 0);
+	discardCard(handPos, currentPlayer, state, 0);
 
 	//discard trashed card
 	for (i = 0; i < state->handCount[currentPlayer]; i++)
 	{
 		if (state->hand[currentPlayer][i] == j)
 		{
-			discardCard(i, currentPlayer, state, 0);
+			discardCard(i, currentPlayer, state, 1);
 			break;
 		}
 	}
@@ -1202,7 +1204,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
         return 0;
 
     case tribute:
-		tributeCardEffect(state);
+		tributeCardEffect(state, handPos);
 
     case ambassador:
 		ambassadorCardEffect(choice1, choice2, state, handPos);
